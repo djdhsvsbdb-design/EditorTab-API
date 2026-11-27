@@ -488,18 +488,29 @@ bool ETEditorUI::init(LevelEditorLayer* editorLayer) {
     auto winSize = CCDirector::get()->getWinSize();
 
     auto newTabMenu = alpha::editor_tabs::TabMenu::create();
-    newTabMenu->setPosition({winSize.width / 2.f, m_tabsMenu->getPositionY()});
-    newTabMenu->setContentSize(m_tabsMenu->getContentSize());
-    newTabMenu->setAnchorPoint(m_tabsMenu->getAnchorPoint());
-    newTabMenu->setScale(m_tabsMenu->getScale());
-    newTabMenu->setZOrder(m_tabsMenu->getZOrder());
-    newTabMenu->setID(m_tabsMenu->getID());
+    if (!newTabMenu) return false;
 
-    m_tabsMenu->removeFromParent();
+    // Preserve the vanilla menu layout when available. Some editor UI
+    // configurations may not expose the original tabs menu.
+    if (m_tabsMenu) {
+        newTabMenu->setPosition({winSize.width / 2.f, m_tabsMenu->getPositionY()});
+        newTabMenu->setContentSize(m_tabsMenu->getContentSize());
+        newTabMenu->setAnchorPoint(m_tabsMenu->getAnchorPoint());
+        newTabMenu->setScale(m_tabsMenu->getScale());
+        newTabMenu->setZOrder(m_tabsMenu->getZOrder());
+        newTabMenu->setID(m_tabsMenu->getID());
+        m_tabsMenu->removeFromParent();
+    }
+    else {
+        newTabMenu->setPosition({winSize.width / 2.f, m_toolbarHeight - 6.f});
+        newTabMenu->setID("build-tabs-menu");
+    }
+
     m_tabsMenu = newTabMenu;
-
     addChild(m_tabsMenu);
-    m_uiItems->addObject(m_tabsMenu);
+    if (m_uiItems) {
+        m_uiItems->addObject(m_tabsMenu);
+    }
 
     setupModes();
     fields->m_initialized = true;
